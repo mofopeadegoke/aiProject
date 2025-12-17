@@ -35,33 +35,35 @@ export default function ImageAnalyzerPage() {
     }
   }, [])
 
-  const startWebcam = async () => {
+ const startWebcam = async () => {
     try {
       console.log("[v0] Requesting webcam access...")
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: 1280, height: 720 },
+        video: { width: 1280, height: 720, facingMode: "user" },
         audio: false,
       })
 
       console.log("[v0] Webcam access granted, stream obtained:", stream)
       streamRef.current = stream
 
-      if (videoRef.current) {
-        console.log("[v0] Setting video srcObject and playing...")
-        videoRef.current.srcObject = stream
-        videoRef.current.onloadedmetadata = async () => {
-          try {
-            await videoRef.current?.play()
-            console.log("[v0] Video playing successfully")
-          } catch (playError) {
-            console.error("[v0] Play error:", playError)
-          }
-        }
-      }
-
       setMode("webcam")
       setIsWebcamActive(true)
       setCapturedImage(null)
+
+      // Wait for next tick to ensure state is updated
+      setTimeout(() => {
+        if (videoRef.current) {
+          console.log("[v0] Setting video srcObject and playing...")
+          videoRef.current.srcObject = stream
+          
+          // Try to play immediately
+          videoRef.current.play().catch((playError) => {
+            console.error("[v0] Play error:", playError)
+          })
+          
+          console.log("[v0] Video setup complete")
+        }
+      }, 100)
 
       toast({
         title: "Webcam activated",
@@ -257,7 +259,7 @@ export default function ImageAnalyzerPage() {
         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight text-balance">Image Analyzer</h1>
+              <h1 className="text-3xl font-bold tracking-tight text-balance">Eco Wheels</h1>
               <p className="mt-2 text-sm text-muted-foreground">Capture or upload images for intelligent analysis</p>
             </div>
           </div>
